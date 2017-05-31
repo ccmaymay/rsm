@@ -1,0 +1,110 @@
+rsm, the Replicated Softmax Model.
+
+Daichi Mochihashi
+The Institute of Statistical Mathematics
+$Id: index.html,v 1.1 2013/06/28 13:02:38 daichi Exp $
+
+rsm is a modified Python implementation of Replicated Softmax Model of
+Salakhutdinov and Hinton (2009) [PDF],
+a simple single-layer "Deep Net" for documents.
+This code is a modification to a Python implementation by Joerg Landthaler,
+http://www.fylance.de/rsm/,
+in several aspects:
+
+  * Includes an easy-to-use command line interface (rsm.py) where many
+    hyperparameters can be specified,
+  * Includes an n-step Contrastive Divergence (option -n) as opposed to the
+    original code,
+  * Visiting data randomly through minibatches during optimization,
+  * Outputs perplexities rather than L2-norm of multinomial reconstruction,
+  * And some fixes.
+
+Download
+
+  * rsm-0.1.tar.gz
+
+rsm requires Numpy and Scipy as well as Python (developed with Python 2.6.6).
+
+Getting started
+
+Unpack the package and just type
+
+% rsm.py -H 10 -N 20 -b 10 train model
+loading data.. done.
+number of documents        = 100
+number of lexicon          = 1324
+number of hidden variables = 10
+number of learning epochs  = 20
+number of CD iterations    = 1
+minibatch size             = 10
+learning rate              = 0.001
+updates per epoch: 10 | total updates: 200
+Epoch[ 0] : PPL = 994.07 [iter=1]
+Epoch[ 1] : PPL = 508.56 [iter=1]
+Epoch[ 2] : PPL = 400.47 [iter=1]
+Epoch[ 3] : PPL = 353.96 [iter=1]
+Epoch[ 4] : PPL = 334.94 [iter=1]
+:
+
+For detailed usage of rsm.py, type
+
+% rsm.py -h
+rsm.py, modified python implementation of Replicated Softmax Model.
+$Id: rsm.py,v 1.7 2013/06/28 10:23:26 daichi Exp $
+usage  : rsm.py [options] train model
+options: -H hiddens number of hidden variables (default = 50)
+         -N epochs  number of learning epochs (default = 1)
+         -n iter    iterations of contrastive divergence (default = 1)
+         -b batch   number of batch size (default = 1)
+         -r rate    learning rate (default = 0.001)
+%
+
+or just execute rsm.py.
+
+Using the model
+
+File 'model' is a pickled Python data structure containing RSM parameters
+(W_vh, W_v, W_h) in the paper as well as some information on hyperparameters.
+
+  * To extract parameters, use hash references to the model
+      + model['w_vh'] = W_vh
+      + model['w_v'] = W_v
+      + model['w_h'] = W_h.
+    For a concrete example, see the scripts explained below.
+  * For example, to map documents into hidden activations (binary coding), use
+    the accompanying script "rsmhidden.py" like this: ("*" means 1, "." means
+    0, "-" means 0 < h < 0.5, "+" means 0.5 < h < 1)
+
+    % rsmhidden.py model.nips test.dat
+    .*..*....*..*..*......*...*........***....*.......
+    .*..*.*.....+.........*........*..................
+    .**.*.-...............*.-.*......-................
+    .*..*..............+..*...+.........-.............
+    .*-.*.*...............*.+.*.......................
+    .*..*..............-..*........+-....+............
+    ..-.-........-........*.-......*.........-..+.....
+    ...............-........*.-....*.........*........
+    ....*.................*...........................
+    .*..*.-.....*..-......*.+........-..-.............
+
+  * To evaluate perplexities on test data, try using the script "rsmppl.py".
+
+Data format
+
+Training data format is just the same as lda or TinySVM, 'id:count' sequence.
+id begins from 1. For a concrete example, see the file 'train' contained in the
+package.
+
+Notices and Caveats
+
+  * rsm is originally written using Numpy ndarray (not sparse), thus runs fast
+    but consumes pretty much memory.
+  * Replicated Softmax Model, or RBM in general, is very hard to optimize and
+    quite sensitive to hyperparameters for optimizing using stochastic
+    gradients. Try many hyperparameter combinations that work well for the data
+    at hand.
+
+-------------------------------------------------------------------------------
+
+daichi<at>ism.ac.jp
+Last modified: Sat Jun 29 18:02:09 2013
